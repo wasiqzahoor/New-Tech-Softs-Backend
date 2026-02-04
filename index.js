@@ -42,7 +42,9 @@ app.get('/api/reviews', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
+app.get('/', (req, res) => {
+    res.send("New Tech Softs API is running...");
+});
 // 2. Add New Review
 app.post('/api/reviews', async (req, res) => {
     try {

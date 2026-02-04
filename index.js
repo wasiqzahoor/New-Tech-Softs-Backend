@@ -1,5 +1,3 @@
-// File: server/index.js
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,19 +5,18 @@ const cors = require('cors');
 
 const app = express();
 
-// Middleware
+// 1. Middlewares (Hamesha top par hone chahiyen)
 app.use(express.json());
-app.use(cors()); // Ye CORS error khatam kar dega
+app.use(cors()); 
 
-// MongoDB Connection
-// Note: Niche 'MONGO_URI' mein apna connection string dalna hoga
-const MONGO_URI = process.env.MONGO_URI ;
+// 2. MongoDB Connection
+const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
 .then(() => console.log("✅ MongoDB Connected"))
 .catch(err => console.log("❌ DB Connection Error:", err));
 
-// --- Schema & Model ---
+// 3. Schema & Model
 const reviewSchema = new mongoose.Schema({
     name: { type: String, required: true },
     role: { type: String, default: "Verified User" },
@@ -30,33 +27,39 @@ const reviewSchema = new mongoose.Schema({
 
 const Review = mongoose.model('Review', reviewSchema);
 
-// --- Routes ---
+// --- ROUTES ---
 
-// 1. Get All Reviews
+// 4. Root Route (Ab ye text nahi, JSON bhejega taake frontend crash na ho)
+app.get('/', (req, res) => {
+    res.json({ 
+        message: "New Tech Softs API is live!",
+        endpoints: {
+            get_reviews: "/api/reviews (GET)",
+            add_review: "/api/reviews (POST)"
+        }
+    });
+});
+
+// 5. Get All Reviews
 app.get('/api/reviews', async (req, res) => {
     try {
-        // Newest reviews first
         const reviews = await Review.find().sort({ createdAt: -1 });
-        res.json(reviews);
+        res.status(200).json(reviews);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
-app.get('/', (req, res) => {
-    res.send("New Tech Softs API is running...");
-});
-// 2. Add New Review
+
+// 6. Add New Review
 app.post('/api/reviews', async (req, res) => {
     try {
         const { name, review, rating } = req.body;
-        
         const newReview = new Review({
             name,
             review,
             rating,
             role: "Verified User" 
         });
-
         const savedReview = await newReview.save();
         res.status(201).json(savedReview);
     } catch (err) {
@@ -64,6 +67,6 @@ app.post('/api/reviews', async (req, res) => {
     }
 });
 
-// Start Server
-const PORT = process.env.PORT || 5000;
+// 7. Start Server (Render ke liye port 10000 behtar hai)
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
